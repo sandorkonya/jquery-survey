@@ -1,0 +1,591 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <title>Very crude survey demo</title>
+        <meta name="keywords" content="" />
+        <meta name="description" content="" />
+        <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet" type="text/css" />
+        <script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+        <style>
+            #blackout {
+                visibility: hidden;
+                position: fixed;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                display: none;
+                background-color: #000;
+                filter: alpha(opacity=80);
+                -moz-opacity: .8;
+                opacity: .8;
+                z-index: 9;
+            }
+            #divpopup {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                margin-top: -250px;
+                /*half of the height plus a little to the top*/
+                margin-left: -425px;
+                /*half of the width */
+                visibility: hidden;
+                display: none;
+                border: 1px solid #000;
+                background-color: #FFF;
+                color: #333;
+                padding: 0;
+                height: 450px;
+                width: 850px;
+                z-index: 10;
+                font-family:"Trebuchet MS", "Lucida Grande", Verdana, Arial, Helvetica, sans-serif;
+                font-size: 12px;
+            }
+            #divpop_head {
+                position:absolute;
+                top:0;
+                left:0;
+                width:100%;
+                background-color: #999999;
+                text-align:center;
+                padding:2px 0;
+                z-index:-1;
+            }
+			
+			
+            #close_pop {
+                float:right;
+                text-align:right;
+                cursor:pointer;
+                padding-right:10px;
+            }
+            #close_pop a {
+                text-decoration:none;
+                color: #333;
+            }
+            #close_pop a:hover {
+                color:#FF0000;
+            }
+            .clear {
+                clear:both;
+            }
+            #pop_content {
+                clear:both;
+                padding: 10px;
+            }
+            .question_box {
+				display: none;
+                position:absolute;
+                top:40px;
+                left:10px;
+                width: 805px;
+                background-color: #efefef;
+                border-style: dotted;
+                border-width: 1px;
+                text-align: left;
+                font-size: 22px;
+                padding: 10px 10px 10px 10px;
+            }
+            .question_title {
+                margin: 10px 0px 10px 10px;
+            }
+            .selected_answers {
+                display: none;
+            }
+
+			.question_singleanswers {
+                float:left;
+                width:100%;
+            }
+            .question_singleanswer {
+                margin: 0px 0px 0px 25px;
+                padding: 2px 0px 2px 10px;
+                font-size: 16px;
+                cursor: hand;
+                cursor: pointer;
+            }
+			
+			.question_gonext {
+				color: #ababab;
+                margin: 15px 0px 0px 10px;
+                padding: 2px 0px 2px 10px;
+                font-size: 18px;
+                cursor: hand;
+                cursor: pointer;
+            }
+			
+			.question_gonext.allow {
+              color: #000;
+            }
+			
+			.warningmsg {
+			display: none;
+              color: red;
+			  float: left;
+			  font-size: 14px;
+			  margin: 5px 0px 0px 10px;
+
+            }
+            .question_singleanswer.active {
+                background: #96e0ff;
+            }    
+
+			.question_singleanswer.active2 {
+                background: #c0ffb8;
+            }
+			
+			.question_multipleanswer {
+                margin: 0px 0px 0px 25px;
+                padding: 2px 0px 2px 10px;
+                font-size: 16px;
+                cursor: hand;
+                cursor: pointer;				
+            }
+
+			.question_weightedanswer {
+                margin: 0px 0px 0px 25px;
+                padding: 2px 0px 2px 10px;
+                font-size: 18px;				
+            }
+
+
+			.weightedanswer_importance {
+                padding: 3px 10px 3px 10px;
+                font-size: 14px;	
+				color: #ababab;	
+				
+            }
+			
+			.weightedanswer_importance_row {
+			                margin: 0px 0px 0px 35px;
+
+            }
+
+			#startsurvey {
+                cursor: hand;
+                cursor: pointer;				
+            }
+			
+			.weightedanswer_importance.active {
+                background: #96e0ff;
+				 cursor: hand;
+                cursor: pointer;
+            }	
+			
+			.weightedanswer_importance.active2 {
+                background: #c0ffb8;
+               cursor: hand;
+                cursor: pointer;
+            }
+			
+			.question_multipleanswer.active {
+                background: #96e0ff;
+            }
+			
+			
+			.question_multipleanswer.active2 {
+                background: #c0ffb8;	
+            }
+			
+			.question_multipleanswer.active2:after {
+				content: "";
+				display: inline;
+				background: url("https://icts.uiowa.edu/sites/default/files/check.32x32.png") no-repeat;
+				width: 32px;
+				height: 32px;
+				margin-top: -15px;
+				float: right;
+			}
+			
+            .rating-a label {
+                float: left;
+                width: 100%;
+                /* padding-top: 15px; */
+                padding: 15px 0 0px 0;
+                font-size: 14px;
+            }
+            .rating-a .br-widget {
+                height: 52px;
+                float: left;
+            }
+            .rating-a .br-widget a {
+                display: block;
+                width: 30px;
+                padding: 5px 0 5px 0;
+                height: 35px;
+                float: left;
+                background-color: #e3e3e3;
+                margin: 1px;
+                text-align: center;
+            }
+            .rating-a .br-widget a.br-active, .rating-a .br-widget a.br-selected {
+                background-color: #59a6d6;
+            }
+            .rating-a .br-widget .br-current-rating {
+                font-size: 20px;
+                line-height: 2;
+                float: left;
+                padding: 0 20px 0 20px;
+                color: #646464;
+            }
+        </style>
+        <!--[if IE]>
+            <style type="text/css">
+                * {
+                    padding: 0;
+                    margin: 0;
+                }
+                html, body {
+                    height: 100%;
+                }
+                #blackout {
+                    position: absolute;
+                }
+                #divpopup {
+                    position: absolute;
+                }
+            </style>
+        <![endif]-->
+        <script type="text/javascript">
+		var landed = $.now();
+		var dontshowbeforeunload = false;
+		var last, sincelanded, uniqueID;
+
+
+		$(document).ready(function () {
+
+		    $.get("http://ipinfo.io", function (response) {
+		        $("input[name='info']").val(response.ip + "|" + response.country + "|" + response.city + "|" + response.loc);
+		    }, "jsonp");
+
+
+		    function randString(n) {
+		        if (!n) {
+		            n = 6;
+		        }
+
+		        var text = '';
+		        var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+		        for (var i = 0; i < n; i++) {
+		            text += possible.charAt(Math.floor(Math.random() * possible.length));
+		        }
+
+		        return text;
+		    }
+
+		    uniqueID = randString();
+
+		    $('#myform').submit(function () {
+		        var s = $('#email').val();
+
+		        $('#pop_content').html('<center><h2>just a sec...</h2><br>we save your request!<br><br><img src="images/loading.gif" id="loading"/></center>');
+
+		        if (s.indexOf("drdrb.com") !== -1) {
+		            $('#pop_content').html('<center><h2> You really think we will send this template to a disposable Email address???</h2><br></center>');
+		            var t = setTimeout('window.location = "https://www.google.de/search?num=10&q=lolcat"', 1600);
+		            return false;
+		        };
+				
+				saveaction("chose_subscribe", "1");
+				
+		        $.ajax({
+		            url: $(this).attr('action'),
+		            type: $(this).attr('method'),
+		            dataType: 'json',
+		            data: $(this).serialize(),
+		            complete: function () {
+		                $('#pop_content').html('<center><h2>You did it! :)</h2><br> now you will be redirected to our special offer!<br><br><img src="images/loading.gif" id="loading"/></center>');
+		                var t = setTimeout('window.location = "thankyou_free_offer.html"', 900);
+		            }
+		        });
+		        return false;
+		    });
+
+
+		    // ---- from here populate the popup box with questions ------------
+
+
+		    function populateq(qtype, question, answers) {
+		        return {
+		            qtype: qtype,
+		            question: question,
+		            answers: answers
+		        }
+		    }
+
+		    var questionpool = [];
+		    
+		  
+	   	   questionpool.push(populateq("singlechoice", "Question 1?", ["1", "2", "3", "4", "5"]));
+		    questionpool.push(populateq("multiplechoice", "Question 2?", ["q1", "q2", "q3", "q4", "q5"]));
+		    questionpool.push(populateq("weighting", "Question 3?", ["q1", "q2", "q3", "q4", "q5"]));
+	        questionpool.push(populateq("singlechoice", "Question 4?", ["1", "2", "3", "4", "5"]));
+		    questionpool.push(populateq("multiplechoice", "Question 5?", ["q1", "q2", "q3", "q4", "q5"]));
+		    questionpool.push(populateq("weighting", "Question 6?", ["q1", "q2", "q3", "q4", "q5"]));
+
+
+		    var questionaire = '';
+		    for (var i = questionpool.length - 1; i >= 0; i--) {
+
+		        if (questionpool[i].qtype == "singlechoice") {
+		            questionaire += '<div class="question_box" id="' + i + '"><div class="question_title">'+(i+1)+'/'+questionpool.length + "."+ questionpool[i].question + '</div><div class="question_singleanswers">';
+		            for (var l = 0; l < questionpool[i].answers.length; l++) {
+		                questionaire += '<div class="question_singleanswer" rel="' + (l + 1) + '">' + questionpool[i].answers[l] + '</div>';
+		            }
+		        } else if (questionpool[i].qtype == "multiplechoice") {
+		            questionaire += '<div class="question_box" id="' + i + '"><div class="question_title">'+(i+1)+'/'+questionpool.length + "."+  questionpool[i].question + '</div><div class="question_singleanswers">';
+		            for (var l = 0; l < questionpool[i].answers.length; l++) {
+		                questionaire += '<div class="question_multipleanswer"rel="' + (l + 1) + '">' + questionpool[i].answers[l] + '</div>';
+		            }
+					}
+				else if (questionpool[i].qtype == "weighting") {
+		            questionaire += '<div class="question_box" id="' + i + '"><div class="question_title">'+(i+1)+'/'+questionpool.length + "."+  questionpool[i].question + '</div><div class="question_weightedanswers">';
+		            for (var l = 0; l < questionpool[i].answers.length; l++) {
+		                questionaire += '<div class="question_weightedanswer" rel="0">' + questionpool[i].answers[l] + '<div class="weightedanswer_importance_row"><span class="weightedanswer_importance" rel="1">very important</span><span class="weightedanswer_importance" rel="2">important</span><span class="weightedanswer_importance" rel="3">neutral</span><span class="weightedanswer_importance" rel="4">less important</span><span class="weightedanswer_importance" rel="5">not important</span></div></div>';
+		            }
+		        }
+				
+		        questionaire += '<div class="question_gonext">go to next question</div><span class="warningmsg">Please select an answer first!</span><div class="selected_answers"></div><div class="clear"></div></div></div>';
+
+		    }
+
+		    $('#divpopup').append(questionaire);
+
+		    $(".question_singleanswer, .question_multipleanswer, .weightedanswer_importance").hover(
+
+		    function () {
+		        $(this).toggleClass("active");
+		    }, function () {
+		        $(this).toggleClass("active");
+		    });
+
+		    $(".question_singleanswer").click(function () {
+		        //remove the active class from all of the elements
+		        $(this).parent().children().removeClass("active2");
+		        // togles the class for the newly clicked element
+		        $(this).toggleClass("active2");
+		        //changes the hidden selected answer div's text
+		        $(this).parent().parent().children().find(".selected_answers").html($(this).parent().parent().children().find(".active2").attr("rel"));
+		        //activates the go to next question button on the bottom
+		        $(".question_gonext").addClass("allow");
+		    });
+
+
+		    $("#startsurvey").click(function () {
+		    saveaction("chose_survey", "1");
+			 $("#email_subs").hide();
+			 $(".question_box:last-child").show();
+			  });
+			
+			
+			$(".question_multipleanswer").click(function () {
+		        $(this).toggleClass("active2");
+		        if ($(this).parent().parent().children().find(".question_multipleanswer.active2").length > 0) {
+		            $(".question_gonext").addClass("allow");
+
+		            var a;
+		            $(this).parent().parent().children().find(".active2").each(function (i) {
+		                if (i == 0) a = $(this).attr("rel");
+		                else a += ";" + $(this).attr("rel")
+		            });
+					
+		            $(this).parent().parent().children().find(".selected_answers").html(a);
+
+		        } else $(".question_gonext").removeClass("allow");
+		    });
+
+
+			$(".weightedanswer_importance").click(function () {
+					//remove the active class from all of the elements
+					$(this).parent().children().removeClass("active2");
+					// togles the class for the newly clicked element
+					$(this).toggleClass("active2");
+					//changes the selected answer div's attr
+					$(this).parent().parent().attr("rel",$(this).attr("rel"));
+					
+					var cantgo = false;
+				 $(this).parent().parent().parent().find(".question_weightedanswer").each(function (i) {
+		                if ($(this).attr("rel") > 0) {}
+		                 else  cantgo = true;
+		            });
+					
+					var a;
+					$(this).parent().parent().parent().find(".active2").each(function (i) {
+							if (i == 0) a = $(this).attr("rel");
+							else a += ";" + $(this).attr("rel")
+							});
+							
+					$(this).parent().parent().parent().find(".selected_answers").html(a);
+					
+					if (cantgo == true) {
+					$(".question_gonext").removeClass("allow"); 
+					}
+					else $(".question_gonext").addClass("allow");
+	
+		    });
+
+		    $(".question_gonext").click(function () {
+
+		        if ($(".question_gonext").hasClass("allow")) {
+
+		            var temp = "q" + (+$(this).parent().parent().attr("id") + 1);
+		            saveaction(temp, $(this).parent().parent().children().find(".selected_answers").text());
+					
+					console.log($(this).parent().parent().attr("id") + " - " + questionpool.length);
+					
+						if ((+$(this).parent().parent().attr("id")+1) < questionpool.length) {
+							 
+							 $(this).parent().parent().parent().find(".question_gonext").removeClass("allow");
+							var a = $(this).parent().parent().prev();
+							$(this).parent().parent().slideUp("slow", function () {
+								a.show();
+							});
+						}
+						else {
+						
+						$(this).parent().parent().slideUp("slow", function () {
+						//now we show them the subscription form and give chance to sign up for the results of the survey
+								$("#email_subs").show();
+								$("#takesurvey").hide();
+								$("#twoway").css("background", "none");
+								$("#subform").css("width", "100%");
+								$("#subform").find('td:first').html("<center><h2>Do you want to know the results of the survey?</h2> Subscribe and when the questioning is over, (2014. Apr 6th) you will get the whole evaluation... it will be pretty interesting! </center>");
+								$("#subform").append("<span style='display:none;' id='gimme'><br><h3> Click <a href='http://html5up.net/' target='_blank'>here</a> to get the responsive designs.</h3> Separate website, opens in a new window!<br><br><br><h3 style=' cursor: hand; cursor: pointer;'><u>No thanks,</u> give me the template, i am not interested!</h3></span>");
+								setTimeout( "jQuery('#gimme').fadeIn('slow');",1500 );
+								dontshowbeforeunload = true;
+								$("#gimme").click(function () {
+						        saveaction("dl", "1");
+								window.location = 'signup.php?dl=1&uID='+uniqueID;
+										});
+							});		
+						};
+		           
+		        } else {
+					//show warning msg
+		            $(this).next('span').fadeIn("slow");
+		            $(this).next('span').fadeOut("slow");
+		        }
+		    });
+		});
+
+		function saveaction(act, val) {
+
+		    if (last) {
+		        diff = $.now() - last;
+		    } else {
+		        diff = $.now() - landed;
+		    }
+
+		    sincelanded = $.now() - landed;
+		    // alert(uniqueID + "||" + act + ", " + val + ", Since last q: " + diff/1000);
+
+		    last = $.now();
+
+		    $.post("test.php", {
+		        id: uniqueID,
+		        sincelanded: sincelanded,
+		        lastq: diff,
+		        act: act,
+		        val: val,
+				ip: $("input[name='info']").val()
+		    });
+		    //          .done(function (data) {
+		    //          alert("Data Loaded1: " + data);
+		    //      });
+
+		}
+
+		$(window).on('beforeunload', function () {
+		    saveaction("leave", "1");
+		 $('body').html('<center><h1>Thank you for visiting us! You can close the site now!</h1><br><br></center>');
+		if (dontshowbeforeunload) return;
+		    return 'Thank you for visiting us!';
+		});
+
+
+		function popup(sw) {
+		    if (sw == 1) {
+		        // Show popup
+		        window.scroll(0, 0);
+		        $("#blackout").css({
+		            "visibility": "visible",
+		            "display": "block"
+		        });
+		        $("#divpopup").css({
+		            "visibility": "visible",
+		            "display": "block"
+		        });
+		        saveaction("showedpopup", "1");
+
+		    } else {
+		        // Hide popup
+		        $("#blackout").css({
+		            "visibility": "hidden",
+		            "display": "none"
+		        });
+		        $("#divpopup").css({
+		            "visibility": "hidden",
+		            "display": "none"
+		        });
+
+
+		    }
+		}
+        </script>
+    </head>
+    
+    <body>
+        <div id="blackout"></div>
+        <div id="divpopup">		
+<div id='email_subs'>
+ <div id='divpop_head'>You Are Seconds Away From Your Download!</div>
+<div id='close_pop'onclick="popup('0')" onmouseover="this.style.text-decoration=underline" >[close]</div>
+<div id='pop_content'>
+<div id='twoway'>
+			<div style="float:left; width:310px; margin-top:30px" id="subform">
+			<form id="myform" name="myform" target="mainframe" method="POST" action="signup.php?signup=1">
+			<input type="hidden" name="info" value="">
+			<center><table>
+			<tr><td colspan=2><center><h2>Subscribe</h2> and get the download link sent to your email address.
+			(it may take <b>up to several minutes</b> to get the email)
+			</center></td></tr>
+			<tr>
+			  <td>Name:</td><td><input type="text" name="name" value="" size="20"></td></tr>
+			<tr>
+			  <td>Email:</td><td><input type="email" name="email" id="email" size="20" required></td></tr>
+				<tr><td colspan=2><center>
+				  <font style="color:#999; font-size:x-small;">PRIVACY POLICY: Your privacy is important to us.<br />
+			We will never sell your email address! Please give valid email!</font>
+				</center></td></tr>
+			<tr><td align="center" colspan="2"><input type="submit" name="submit" value="Submit"></td></tr>
+			</table><center>
+			</form>	
+			</div>
+			<div style="float:right; width:290px; margin-top:30px; margin-right:10px;" id="takesurvey">
+					<h2>Take our <u>short</u> survey</h2><br><br>
+					<font style="font-size: 15px;">and get a direct link to download <b><u>without subscription!</u></b>
+					It only takes 90 seconds!
+					<br>
+					<h2>+ Extra Present:</h2><br><br>get 3 different HTML5 based <u>responsive</u> webdesigns to download!
+					</font>
+					<br><br><br>
+				<center>
+				<span id="startsurvey"><h2><u> ->GO </u></h2></span>
+				</center>
+			</div>
+			<div class="clear"></div>
+		</div>
+</div>
+</div>
+
+        </div>
+		
+
+                <br />Do the survey <a href="javascript:popup(1);" onclick=""><strong>Here</strong></a>!
+      
+    </body>
+
+</html>
